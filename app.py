@@ -171,7 +171,7 @@ async def do_power_action(guid: str, action: int, useSOL: str = "false") -> str:
     data = await make_dmt_post_request(url, json=payload)
 
     if (not data) or (data.get("ReturnValue") is None):
-        return f"Unable to perform power action on the device."
+        return "Unable to perform power action on the device."
     
     if data["ReturnValue"] != 0:
         return "Failed to perform power action."
