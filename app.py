@@ -49,6 +49,7 @@ async def authorize():
     global token
     token = await get_token(DMT_username, DMT_password)
 
+# authorize the session
 asyncio.run(authorize())
 
 
@@ -66,7 +67,7 @@ async def make_dmt_get_request(url: str) -> dict[str, Any] | None:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            return None
+            return {"Exception": e}
 
 async def make_dmt_post_request(url: str, json: dict[str, Any]) -> dict[str, Any] | None:
     """Make a POST request to the Intel® DMT API with proper error handling."""
@@ -81,23 +82,21 @@ async def make_dmt_post_request(url: str, json: dict[str, Any]) -> dict[str, Any
             response = await client.post(url, json=json, headers=headers, timeout=30.0)
             response.raise_for_status()
             return response.json()
-        except Exception:
-            return None
+        except Exception as e:
+            return {"Exception": e}
 
 
 @mcp.tool()
-async def get_devices(status: int = 1) -> str:
+async def get_devices() -> str:
     """
     Lists all Intel® AMT devices/Remote Provisioning Client (RPC) known to Management Presence Server (MPS).
-
-    Args:
-        status: Status of the client. Specify '0' to query for disconnected devices. Specify '1' for connected devices. To return all devices, omit this query parameter.
     """
+    status = 1 # status of the client. Specify '0' to query for disconnected devices. Specify '1' for connected devices. To return all devices, omit this query parameter.
     url = f"{DMT_API_BASE}/devices?status={status}"
     data = await make_dmt_get_request(url)
 
-    if not data:
-        return "Unable to fetch devices."
+    if not isinstance(data, list) and data.get("Exception"):
+        return f"Unable to fetch devices. Exception: {data['Exception']}"
     if isinstance(data, list) and len(data) < 1:
         return "No device."
     
@@ -132,8 +131,8 @@ async def get_power_state(guid: str) -> str:
     url = f"{DMT_API_BASE}/amt/power/state/{guid}"
     data = await make_dmt_get_request(url)
 
-    if not data:
-        return "Unable to get power state of device."
+    if data.get("Exception"):
+        return f"Unable to get power state of device. Exception: {data['Exception']}"
     
     state = ""
     match data["powerstate"]:
@@ -170,8 +169,10 @@ async def do_power_action(guid: str, action: int, useSOL: str = "false") -> str:
     }
     data = await make_dmt_post_request(url, json=payload)
 
-    if (not data) or (data.get("ReturnValue") is None):
+    if data.get("ReturnValue") is None:
         return "Unable to perform power action on the device."
+    if data.get("Exception"):
+        return f"Unable to perform power action on the device. Exception: {data['Exception']}"
     
     if data["ReturnValue"] != 0:
         return "Failed to perform power action."
