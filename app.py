@@ -378,12 +378,10 @@ async def power_off_devices(dev_ids: List[str]) -> List[OperationResult] | str:
     return results
 
 
-# authorize the session
-asyncio.run(authorize())
-# get all device in the network
-asyncio.run(get_all_device())
-
-
 if __name__ == "__main__":
+    # authorize the session
+    asyncio.run(authorize())
+    # get all device in the network
+    asyncio.run(get_all_device())
     # Initialize and run the server
     mcp.run(transport='stdio')
