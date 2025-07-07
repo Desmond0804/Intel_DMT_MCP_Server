@@ -1,5 +1,6 @@
 import os
 import asyncio
+import json
 from dotenv import load_dotenv
 from typing import Any, List, Dict, TypedDict, Optional
 import httpx
@@ -195,12 +196,12 @@ async def get_all_device():
 
 
 @mcp.tool()
-async def query_device(dev_ids: Optional[List[str]] = None) -> Dict[str, DeviceInfo]:
+async def query_device(dev_ids: Optional[List[str] | str] = None) -> Dict[str, DeviceInfo] | str:
     """
     Get status information for target devices.
     
     Args:
-        dev_ids (List[str] | None): List of target device IDs. Will returns all managed devices if dev_id is None.
+        dev_ids (list | None): List of target device IDs. Will returns all managed devices if dev_id is None. E.g.: ['Device 01', 'Device 02']
 
     Returns:
         Dict[str, DeviceInfo]: Dictionary of device information keyed by device ID, e.g.:
@@ -222,8 +223,13 @@ async def query_device(dev_ids: Optional[List[str]] = None) -> Dict[str, DeviceI
         }
     """
     global all_device
-    if (dev_ids is None) or (not dev_ids):
+    if (dev_ids is None) or (not dev_ids) or (dev_ids.lower() == "none") or (dev_ids.lower() == "null"):
         return all_device
+    if not isinstance(dev_ids, list):
+        if isinstance(dev_ids, str):
+            dev_ids = json.loads(dev_ids)
+        else: 
+            return "Please provide device IDs in list of string."
 
     devices = {}
     for dev_id in dev_ids:
@@ -232,12 +238,12 @@ async def query_device(dev_ids: Optional[List[str]] = None) -> Dict[str, DeviceI
     return devices
 
 @mcp.tool()
-async def power_on_devices(dev_ids: List[str]) -> List[OperationResult] | str:
+async def power_on_devices(dev_ids: List[str] | str) -> List[OperationResult] | str:
     """
     Power on target devices.
     
     Args:
-        dev_ids (List[str]): List of device IDs to power on.
+        dev_ids (list): List of device IDs to power on. E.g.: ['Device 01', 'Device 02']
         
     Returns:
         List[OperationResult]: List of individual operation result for each device, e.g.:
@@ -258,6 +264,11 @@ async def power_on_devices(dev_ids: List[str]) -> List[OperationResult] | str:
     """
     if not dev_ids:
         return "Please provide device IDs."
+    if not isinstance(dev_ids, list):
+        if isinstance(dev_ids, str):
+            dev_ids = json.loads(dev_ids)
+        else: 
+            return "Please provide device IDs in list of string."
     
     global all_device
     results = []
@@ -305,12 +316,12 @@ async def power_on_devices(dev_ids: List[str]) -> List[OperationResult] | str:
     return results
 
 @mcp.tool()
-async def power_off_devices(dev_ids: List[str]) -> List[OperationResult] | str:
+async def power_off_devices(dev_ids: List[str] | str) -> List[OperationResult] | str:
     """
     Power off target devices.
     
     Args:
-        dev_ids (List[str]): List of device IDs to power off.
+        dev_ids (list): List of device IDs to power off. E.g.: ['Device 01', 'Device 02']
         
     Returns:
         List[OperationResult]: List of individual operation result for each device, e.g.:
@@ -331,6 +342,11 @@ async def power_off_devices(dev_ids: List[str]) -> List[OperationResult] | str:
     """
     if not dev_ids:
         return "Please provide device IDs."
+    if not isinstance(dev_ids, list):
+        if isinstance(dev_ids, str):
+            dev_ids = json.loads(dev_ids)
+        else: 
+            return "Please provide device IDs in list of string."
     
     global all_device
     results = []
