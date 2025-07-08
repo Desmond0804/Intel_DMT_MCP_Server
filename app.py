@@ -201,7 +201,7 @@ async def query_device(dev_ids: Optional[List[str] | str] = None) -> Dict[str, D
     Get status information for target devices.
     
     Args:
-        dev_ids (list | None): List of target device IDs. Will returns all managed devices if dev_id is None. E.g.: ['Device 01', 'Device 02']
+        dev_ids (list | None): List of target device IDs, e.g. ['Device 01', 'Device 02']. Will returns all managed devices if dev_id is None.
 
     Returns:
         Dict[str, DeviceInfo]: Dictionary of device information keyed by device ID, e.g.:
@@ -223,13 +223,13 @@ async def query_device(dev_ids: Optional[List[str] | str] = None) -> Dict[str, D
         }
     """
     global all_device
-    if (dev_ids is None) or (not dev_ids) or (dev_ids.lower() == "none") or (dev_ids.lower() == "null"):
+    if (dev_ids is None) or (not dev_ids):
         return all_device
-    if not isinstance(dev_ids, list):
-        if isinstance(dev_ids, str):
+    if isinstance(dev_ids, str):
+        if (dev_ids.lower() == "none") or (dev_ids.lower() == "null") or (dev_ids == "*"):
+            return all_device
+        else:
             dev_ids = json.loads(dev_ids)
-        else: 
-            return "Please provide device IDs in list of string."
 
     devices = {}
     for dev_id in dev_ids:
@@ -238,12 +238,12 @@ async def query_device(dev_ids: Optional[List[str] | str] = None) -> Dict[str, D
     return devices
 
 @mcp.tool()
-async def power_on_devices(dev_ids: List[str] | str) -> List[OperationResult] | str:
+async def power_on_devices(dev_ids: Optional[List[str] | str] = None) -> List[OperationResult] | str:
     """
     Power on target devices.
     
     Args:
-        dev_ids (list): List of device IDs to power on. E.g.: ['Device 01', 'Device 02']
+        dev_ids (list | None): List of device IDs to power on, e.g.: ['Device 01', 'Device 02']. Will power on all devices if dev_id is None.
         
     Returns:
         List[OperationResult]: List of individual operation result for each device, e.g.:
@@ -262,15 +262,15 @@ async def power_on_devices(dev_ids: List[str] | str) -> List[OperationResult] | 
             }
         ]
     """
-    if not dev_ids:
-        return "Please provide device IDs."
-    if not isinstance(dev_ids, list):
-        if isinstance(dev_ids, str):
-            dev_ids = json.loads(dev_ids)
-        else: 
-            return "Please provide device IDs in list of string."
-    
     global all_device
+    if (dev_ids is None) or (not dev_ids):
+        dev_ids = all_device.keys()
+    if isinstance(dev_ids, str):
+        if (dev_ids.lower() == "none") or (dev_ids.lower() == "null") or (dev_ids == "*"):
+            dev_ids = all_device.keys()
+        else: 
+            dev_ids = json.loads(dev_ids)
+
     results = []
     payload = {
         "action": 2,
@@ -316,12 +316,12 @@ async def power_on_devices(dev_ids: List[str] | str) -> List[OperationResult] | 
     return results
 
 @mcp.tool()
-async def power_off_devices(dev_ids: List[str] | str) -> List[OperationResult] | str:
+async def power_off_devices(dev_ids: Optional[List[str] | str] = None) -> List[OperationResult] | str:
     """
     Power off target devices.
     
     Args:
-        dev_ids (list): List of device IDs to power off. E.g.: ['Device 01', 'Device 02']
+        dev_ids (list | None): List of device IDs to power off, e.g.: ['Device 01', 'Device 02']. Will power off all devices if dev_id is None.
         
     Returns:
         List[OperationResult]: List of individual operation result for each device, e.g.:
@@ -340,15 +340,15 @@ async def power_off_devices(dev_ids: List[str] | str) -> List[OperationResult] |
             }
         ]
     """
-    if not dev_ids:
-        return "Please provide device IDs."
-    if not isinstance(dev_ids, list):
-        if isinstance(dev_ids, str):
-            dev_ids = json.loads(dev_ids)
-        else: 
-            return "Please provide device IDs in list of string."
-    
     global all_device
+    if (dev_ids is None) or (not dev_ids):
+        dev_ids = all_device.keys()
+    if isinstance(dev_ids, str):
+        if (dev_ids.lower() == "none") or (dev_ids.lower() == "null") or (dev_ids == "*"):
+            dev_ids = all_device.keys()
+        else: 
+            dev_ids = json.loads(dev_ids)
+
     results = []
     payload = {
         "action": 8,
