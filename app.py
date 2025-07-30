@@ -1,6 +1,6 @@
 import os
 import asyncio
-import json
+import ast
 from dotenv import load_dotenv
 from typing import Any, List, Dict, TypedDict, Optional
 import httpx
@@ -229,7 +229,7 @@ async def query_device(dev_ids: Optional[List[str] | str] = None) -> Dict[str, D
         if (dev_ids.lower() == "none") or (dev_ids.lower() == "null") or (dev_ids == "*"):
             return all_device
         else:
-            dev_ids = json.loads(json.dumps(dev_ids))
+            dev_ids = ast.literal_eval(dev_ids)
 
     devices = {}
     for dev_id in dev_ids:
@@ -269,7 +269,7 @@ async def power_on_devices(dev_ids: Optional[List[str] | str] = None) -> List[Op
         if (dev_ids.lower() == "none") or (dev_ids.lower() == "null") or (dev_ids == "*"):
             dev_ids = all_device.keys()
         else: 
-            dev_ids = json.loads(json.dumps(dev_ids))
+            dev_ids = ast.literal_eval(dev_ids)
 
     results = []
     payload = {
@@ -347,7 +347,7 @@ async def power_off_devices(dev_ids: Optional[List[str] | str] = None) -> List[O
         if (dev_ids.lower() == "none") or (dev_ids.lower() == "null") or (dev_ids == "*"):
             dev_ids = all_device.keys()
         else: 
-            dev_ids = json.loads(json.dumps(dev_ids))
+            dev_ids = ast.literal_eval(dev_ids)
 
     results = []
     payload = {
